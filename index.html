@@ -3,9 +3,8 @@
 <tt>
 <h3>JS13K-pack</h3>
 <p>- Paste your unminified HTML, CSS, and JS files here
-<br>- Press "pack" to minify your code, gather it in a single file, pass it through RoadRoller and zip it
+<br>- Press "pack" to minify your code, gather it in a single file, pass it through RoadRoller and zip it (DEFLATE level 9)
 <br>- Everything is saved in localStorage so you can exit and come back later
-<br>- You'll need to use an external tool like ETC to optimize your zip.
 <br><br>
 <b>
 <table><tr><td><b>HTML (without style or script tags)<br><br><textarea id=html1 spellcheck=false></textarea><td><b>CSS<br><br><textarea id=css1 spellcheck=false></textarea>
@@ -140,7 +139,14 @@ pack1.onclick = async () => {
   if(zip1.checked){
     var zip = new JSZip();
     zip.file("index.html", res);
-    zip.generateAsync({type:"base64"}).then(function (base64) {
+    zip.generateAsync(
+      {
+        type:"base64",
+        compression: "DEFLATE",
+        compressionOptions: {
+         level: 9
+        }
+      }).then(function (base64) {
       dl1.href="data:application/zip;base64," + base64;
       console.log("zip: " + atob(base64).length + " bytes");
     });
