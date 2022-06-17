@@ -1,0 +1,157 @@
+﻿<!doctype html>
+<body id=b>
+<tt>
+<h3>JS13K-pack</h3>
+<p>- Paste your unminified HTML, CSS, and JS files here
+<br>- Press "pack" to minify your code, gather it in a single file, pass it through RoadRoller and zip it
+<br>- Everything is saved in localStorage so you can exit and come back later
+<br>- You'll need to use an external tool like ETC to optimize your zip.
+<br><br>
+<b>
+<table><tr><td><b>HTML (without style or script tags)<br><br><textarea id=html1 spellcheck=false></textarea><td><b>CSS<br><br><textarea id=css1 spellcheck=false></textarea>
+</table>
+<p>JS (up to 10 files)<p>
+<textarea id=js1 class=js spellcheck=false></textarea>
+<textarea id=js2 class=js spellcheck=false></textarea>
+<textarea id=js3 class=js spellcheck=false></textarea>
+<textarea id=js4 class=js spellcheck=false></textarea>
+<textarea id=js5 class=js spellcheck=false></textarea>
+<p>
+<textarea id=js6 class=js spellcheck=false></textarea>
+<textarea id=js7 class=js spellcheck=false></textarea>
+<textarea id=js8 class=js spellcheck=false></textarea>
+<textarea id=js9 class=js spellcheck=false></textarea>
+<textarea id=js10 class=js spellcheck=false></textarea>
+<p>
+</b>
+<p><input type=checkbox id=min1 checked>Minify
+ | <input type=checkbox id=zip1 checked>zip
+ | RoadRoller <input type=radio name=rrr id=rr0 checked>no <input type=radio id=rr1 name=rrr>light <input type=radio id=rr2 name=rrr>strong 
+
+<p><button id=pack1>PACK</button> 
+<details id=det1>
+<summary>Output</summary>
+<textarea id=out1 spellcheck=false></textarea>
+<p><a href="" download="index.zip" id=dl1>DOWNLOAD ZIP</a>
+</details>
+
+<style>
+table { width: 98%; height: 110px }
+textarea { font-size: 9px; width: calc(49vw - 20px); height: 110px }
+details textarea { width: 95vw; height: 110px }
+textarea.js { font-size: 9px; width: calc(20vw - 20px); height: 110px }
+input { vertical-align: middle }
+</style>
+
+<script src=terser.5.14.1.js></script>
+<script src="jszip.min.js"></script>
+
+<script type=module>
+
+import { ResourcePool, Packer } from "./rr/index.js";
+
+const resourcePool = new ResourcePool(); // this should persist
+
+let ids = ["html1","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"], i;
+
+oninput = () => {
+  for(i in ids){
+    localStorage["js13kpack_"+ids[i]] = top[ids[i]].value;
+  }
+}
+
+pack1.onclick = async () => {
+
+  document.body.style.cursor = "wait";
+  
+  var js = 
+  js1.value + ';' +
+  js2.value + ';' +
+  js3.value + ';' +
+  js4.value + ';' +
+  js5.value + ';' +
+  js6.value + ';' +
+  js7.value + ';' +
+  js8.value + ';' +
+  js9.value + ';' +
+  js10.value;
+  
+  js = js.replace(/;+/g,";").replace(/;+$/,"");
+  
+  //console.log(js);
+  
+  if(min1.checked){
+    let terser = await Terser.minify(js, {
+        toplevel: true,
+        compress: {
+          passes: 5,
+          unsafe: true,
+          pure_getters: true
+        }
+      }
+    )
+    if(terser.code) js = terser.code;
+  }
+  
+  if(rr1.checked){
+    const inputs = [ { data: js, type: 'js', action: 'eval' } ];
+    const packer = new Packer(inputs, { resourcePool }); // this should be distinct
+    await packer.optimize(); // equivalent to -O1
+    const { firstLine, secondLine } = packer.makeDecoder();
+    js=firstLine+secondLine;
+    setTimeout('document.body.style.cursor = "default";',500);
+  }
+  
+  else if(rr2.checked){
+    document.body.style.cursor = "wait";
+    const inputs = [ { data: js, type: 'js', action: 'eval' } ];
+    const packer = new Packer(inputs, { resourcePool }); // this should be distinct
+    await packer.optimize(2); // equivalent to -O1
+    const { firstLine, secondLine } = packer.makeDecoder();
+    js=firstLine+secondLine;
+    setTimeout('document.body.style.cursor = "default";',500);
+  }
+  
+  else {
+    document.body.style.cursor = "default";
+  }
+
+  var res = 
+  (
+    min1.checked
+    ? html1.value.replace(/(<!--[^]+?->|\s)+/g," ").replace(/ (?=<|$)|<\/[tl].>|<.p> *(<[p/])| ?\/?(>)/gi,"$1$2")
+    : html1.value
+  )
+  + "<script>"
+  + js
+  + "</script><style>" +
+  (
+    min1.checked
+    ? css1.value.replace(/(\/\*[^]+?\*\/|\s)+/g," ").replace(/^ |([ ;]*)([^\w:*.#% -])([ ;]*)|\*?(:) */g,"$2$4")
+    : css1.value
+  );
+  
+  out1.value = res;
+  console.log("minified code: " + res.length + " bytes");
+  det1.setAttribute("open", "true");
+  b.scrollTop = 10000;
+  document.documentElement.scrollTop = 10000;
+  
+  if(zip1.checked){
+    var zip = new JSZip();
+    zip.file("index.html", res);
+    zip.generateAsync({type:"base64"}).then(function (base64) {
+      dl1.href="data:application/zip;base64," + base64;
+      console.log("zip: " + atob(base64).length + " bytes");
+    });
+
+  }
+}
+</script>
+
+<script>
+  var ids = ["html1","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"];
+  for(i in ids){
+    if(localStorage["js13kpack_"+ids[i]]) top[ids[i]].value = localStorage["js13kpack_"+ids[i]];
+  }
+</script>
