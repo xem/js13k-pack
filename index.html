@@ -3,7 +3,7 @@
 <tt>
 <h3>JS13K-pack</h3>
 <p>- Paste your unminified HTML, CSS, and JS files here
-<br>- Press "pack" to minify your code, gather it in a single file, pass it through RoadRoller and zip it (DEFLATE level 9)
+<br>- Press "pack" to minify / roadroll your code, put it in a single file and zip it with zopfli
 <br>- Everything is saved in localStorage so you can exit and come back later
 <br><br>
 <b>
@@ -31,10 +31,11 @@
 <details id=det1>
 <summary>Output</summary>
 <textarea id=out1 spellcheck=false></textarea>
-<p><a href="" download="index.zip" id=dl1>DOWNLOAD ZIP</a>
+<p><a href="" download="entry.zip" id=dl1 style="color:transparent">DOWNLOAD ZIP</a>
 </details>
 
 <style>
+body { font-size: 11px }
 table { width: 98%; height: 110px }
 textarea { font-size: 9px; width: calc(49vw - 20px); height: 110px }
 details textarea { width: 95vw; height: 110px }
@@ -44,6 +45,9 @@ input { vertical-align: middle }
 
 <script src=terser.5.14.1.js></script>
 <script src="jszip.min.js"></script>
+<script src="zopfli/libzopfli.js"></script>
+<script src="zopfli/compress.js"></script>
+<script src="zopfli/byte-b64.js"></script>
 
 <script type=module>
 
@@ -60,8 +64,12 @@ oninput = () => {
 }
 
 pack1.onclick = async () => {
+  console.clear();
 
+  det1.setAttribute("open", "false");
   document.body.style.cursor = "wait";
+  out1.value = "";
+  
   
   var js = 
   js1.value + ';' +
@@ -75,9 +83,11 @@ pack1.onclick = async () => {
   js9.value + ';' +
   js10.value;
   
+  
   js = js.replace(/;+/g,";").replace(/;+$/,"");
   
   //console.log(js);
+  console.log("raw size: " + (html1.value + "<script>" + js + "<\/script><style>" + css1.value).length + " bytes");
   
   if(min1.checked){
     let terser = await Terser.minify(js, {
@@ -131,26 +141,84 @@ pack1.onclick = async () => {
   );
   
   out1.value = res;
-  console.log("minified code: " + res.length + " bytes");
+  if(min1.checked && !rr1.checked) console.log("minified code: " + res.length + " bytes");
+  if(min1.checked && rr1.checked) console.log("minified/roadrolled code: " + res.length + " bytes");
   det1.setAttribute("open", "true");
   b.scrollTop = 10000;
   document.documentElement.scrollTop = 10000;
   
   if(zip1.checked){
-    var zip = new JSZip();
-    zip.file("index.html", res);
-    zip.generateAsync(
-      {
-        type:"base64",
-        compression: "DEFLATE",
-        compressionOptions: {
-         level: 9
-        }
-      }).then(function (base64) {
-      dl1.href="data:application/zip;base64," + base64;
-      console.log("zip: " + atob(base64).length + " bytes");
-    });
+    
+    dl1.style.color = "blue";
+    
+    
+    
+    const z = window.Module;
 
+    function ensureByteBuffer(input) {
+      if (typeof input === 'string') {
+        const a = z.intArrayFromString(input);
+        a.length--; // because emscripten's intArrayFromString() adds trailing nul
+        return a;
+      } else if (Array.isArray(input)) {
+        return Uint8Array.from(input);
+      } else {
+        return input;
+      }
+    }
+
+    const defaultOptions = {
+      verbose: false,
+      verbose_more: false,
+      numiterations: 15,
+      blocksplitting: true,
+      blocksplittingmax: 15,
+    };
+
+    function compress(input, format, options) {
+      console.assert(input != null, "buffer must not be null");
+      console.assert(options != null, "options must not be null");
+
+      const byteBuffer = ensureByteBuffer(input);
+      const bufferPtr = z.allocate(byteBuffer, 'i8', z.ALLOC_NORMAL);
+
+      const opts = { ...defaultOptions, ...options };
+
+      const output = z._createZopfliJsOutput();
+      z._compress(bufferPtr, byteBuffer.length, output,
+        format,
+        opts.verbose,
+        opts.verbose_more,
+        opts.numiterations,
+        opts.blocksplitting,
+        opts.blocksplittingmax,
+      );
+
+      const outputPtr = z._getBuffer(output);
+      const outputSize = z._getBufferSize(output);
+
+      const result = z.HEAPU8.slice(outputPtr, outputPtr + outputSize);
+      z._deallocate(outputPtr);
+      z._deallocate(output);
+      z._deallocate(bufferPtr);
+
+      return result;
+    }
+
+
+    var inflated = (new TextEncoder()).encode(res);
+    var deflated = compress(inflated, 2, defaultOptions);
+    var zipzop = makeZip("index.html", inflated, deflated);
+    console.log("zip file: " + zipzop.length + " bytes");
+    var decoder = new TextDecoder('utf8');
+    var zipzop64 = bytesToBase64(zipzop);
+    //console.log(zipzop64);
+    dl1.setAttribute("download", "entry.zip");
+    dl1.href = "data:application/zip;base64," + zipzop64;
+
+  }
+  else {
+    dl1.style.color = "transparent";
   }
 }
 </script>
