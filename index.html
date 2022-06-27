@@ -84,10 +84,10 @@ pack1.onclick = async () => {
   js10.value;
   
   
-  js = js.replace(/;+/g,";").replace(/;+$/,"");
+  js = js.replace(/;+$/,";");
   
   //console.log(js);
-  console.log("raw size: " + (html1.value + "<script>" + js + "<\/script><style>" + css1.value).length + " bytes");
+  console.log("raw size: " + (html1.value + "<script>" + js + "<\/script>"+(css1.value ? ("<style>" + css1.value):"")).length + " bytes");
   
   if(min1.checked){
     let terser = await Terser.minify(js, {
@@ -133,12 +133,12 @@ pack1.onclick = async () => {
   )
   + "<script>"
   + js
-  + "</script><style>" +
-  (
+  + "</script>" + 
+  (css1.value ? ("<style>" + (
     min1.checked
     ? css1.value.replace(/(\/\*[^]+?\*\/|\s)+/g," ").replace(/^ |([ ;]*)([^\w:*.#% -])([ ;]*)|\*?(:) */g,"$2$4")
     : css1.value
-  );
+  )):"");
   
   out1.value = res;
   if(min1.checked && !rr1.checked) console.log("minified code: " + res.length + " bytes");
