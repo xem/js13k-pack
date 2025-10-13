@@ -8,7 +8,7 @@
 <br>- Everything is saved in localStorage so you can exit and come back later. 
 <br><br>
 <b>
-<p><h2>Input <button onclick='ids=["html1","html2","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"];for(i in ids){localStorage["js13kpack_"+ids[i]] = "";}location=location'>clear everything</button></h2>
+<p><h2>Input <button onclick='ids=["html1","html2","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"];for(i in ids){localStorage["js13kpack2_"+ids[i]] = "";}location=location'>clear everything</button></h2>
 <br>
 <table><tr><td>
 <b>HTML prefix (won't be compressed)</b>
@@ -276,7 +276,7 @@ let minify = async (skip, skip2) => {
 // On input: save code in localstorage, minify
 oninput = () => {
   for(i in ids){
-    localStorage["js13kpack_"+ids[i]] = top[ids[i]].value;
+    localStorage["js13kpack2_"+ids[i]] = top[ids[i]].value;
   }
   
   out1.value = "";
@@ -306,7 +306,7 @@ onload = () => {
 
   // Onload
   for(i in ids){
-    if(localStorage["js13kpack_"+ids[i]] !== undefined) top[ids[i]].value = localStorage["js13kpack_"+ids[i]];
+    if(localStorage["js13kpack2_"+ids[i]] !== undefined) top[ids[i]].value = localStorage["js13kpack2_"+ids[i]];
   }
 
   out1.value = "";
