@@ -1,17 +1,33 @@
 ﻿<!doctype html>
 <body id=b>
 <tt>
-<h3>JS13K-pack</h3>
-<p>- Paste your unminified HTML, CSS, and JS files here
-<br>- Press "pack" to minify / roadroll your code, put it in a single file and zip it with zopfli
-<br>- Everything is saved in localStorage so you can exit and come back later
+<h1>JS13K-pack 2.0</h1>
+<p>- Paste your unminified HTML, CSS, and JS files below. <!-- or drop your source files into this page -->
+<br>- Choose your options and press pack to generate a zip 100% optimized for JS13kGames (single HTML file, <abbr title="no need to use meta charset in your html code">utf-8 BOM</abbr>, <abbr title="miniHTMLminifier + terser JS + csso">minified</abbr>, roadrolled, zip + zopfli) 
+<br>- If you have images (or other binary files), consider <a href="https://tinypng.com/">compressing them</a> and including them in base64 inside your HTML code using <a href="https://xem.github.io/miniURI/input-es6.html">this tool</a>.
+<br>- Everything is saved in localStorage so you can exit and come back later. 
 <br><br>
 <b>
-<table><tr><td><b>HTML (without style or script tags)<br><br><textarea id=html1 spellcheck=false></textarea><td><b>CSS<br><br><textarea id=css1 spellcheck=false></textarea>
+<p><h2>Input <button onclick='ids=["html1","html2","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"];for(i in ids){localStorage["js13kpack_"+ids[i]] = "";}location=location'>clear everything</button></h2>
+<br>
+<table><tr><td>
+<b>HTML prefix (won't be compressed)</b>
+<br><br>
+<textarea id=html1 spellcheck=false>&lt;doctype html>&lt;title>MY GAME&lt;/title>&lt;link rel=icon href="https://fav.farm/😽"></textarea>
+<td>
+<b>HTML code (will be compressed)</b>
+<br><br>
+<textarea id=html2 spellcheck=false>&lt;body id=b>Hi</textarea>
+<td>
+<b>CSS</b>
+<br><br>
+<textarea id=css1 spellcheck=false>* { margin: 0; padding: 0; box-sizing: border-box }
+body { background: #fff }</textarea>
 </table>
+
 <p>JS (up to 10 files)<p>
-<textarea id=js1 class=js spellcheck=false></textarea>
-<textarea id=js2 class=js spellcheck=false></textarea>
+<textarea id=js1 class=js spellcheck=false>b.innerHTML = "We are in " + (new Date()).getFullYear() + "!"</textarea>
+<textarea id=js2 class=js spellcheck=false>console.log("YAY JS13K")</textarea>
 <textarea id=js3 class=js spellcheck=false></textarea>
 <textarea id=js4 class=js spellcheck=false></textarea>
 <textarea id=js5 class=js spellcheck=false></textarea>
@@ -23,54 +39,68 @@
 <textarea id=js10 class=js spellcheck=false></textarea>
 <p>
 </b>
-<p><input type=checkbox id=min1 checked>Minify
- | <input type=checkbox id=zip1 checked>zip
- | RoadRoller <input type=radio name=rrr id=rr0 checked>no <input type=radio id=rr1 name=rrr>light <input type=radio id=rr2 name=rrr>strong 
 
+<br>
+<p><b>Options</b>
+<p>- <input type=checkbox id=min1 checked onclick="event.preventDefault();return!1"style="cursor:not-allowed" title="this is mandatory"> Concat + minify everything + UTF8 BOM
+<p>- <input type=checkbox id=min2 checked> RoadRoller <input type=radio id=rr1 name=rrr checked>light <input type=radio id=rr2 name=rrr>strong
+<p>- <input type=checkbox id=zip1 checked> Generate zip
+<br>
+<br>
 <p><button id=pack1>PACK</button> 
-<details id=det1>
-<summary>Output</summary>
+<br><br>
+<br><br>
+<p><h2>Output</h2>
+<br><br>
+<table><tr><td>
+<b>Concatenated code <a  onclick="var newWindow = window.open();newWindow.document.write(out1.value);"><img src="newtab.svg"></a></b>
+<br><br>
 <textarea id=out1 spellcheck=false></textarea>
-<p><a href="" download="entry.zip" id=dl1 style="color:transparent">DOWNLOAD ZIP</a>
-</details>
+<td>
+<b>Minified code <a  onclick="var newWindow = window.open();newWindow.document.write(out2.value);"><img src="newtab.svg"></a></b>
+<br><br>
+<textarea id=out2 spellcheck=false></textarea>
+<td>
+<b>Roadrolled code <a onclick="var newWindow = window.open();newWindow.document.write(out3.value);"><img src="newtab.svg"></a></b>
+<br><br>
+<textarea id=out3 spellcheck=false></textarea>
+</table>
+<p><b>Zip</b>
+<p><a href="" download="entry.zip" id=dl1>...</a>
+
+<p><b>Stats</b>
+<p><input id=out4 spellcheck=false>
 
 <style>
 body { font-size: 11px }
 table { width: 98%; height: 110px }
-textarea { font-size: 9px; width: calc(49vw - 20px); height: 110px }
-details textarea { width: 95vw; height: 110px }
-textarea.js { font-size: 9px; width: calc(20vw - 20px); height: 110px }
+textarea { font-size: 9px; width: calc(33vw - 20px); height: 130px; vertical-align: baseline }
+textarea#out1,textarea#out2,textarea#out3 { width: calc(33vw - 20px); height: 130px }
+#out4 { width: 600px; }
+textarea.js { font-size: 9px; width: calc(20vw - 20px); height: 130px }
 input { vertical-align: middle }
+img { width: 12px; vertical-align: bottom }
 </style>
 
-<script src=terser.5.14.1.js></script>
+<script src='terser.5.14.1.js'></script>
 <script src="jszip.min.js"></script>
 <script src="zopfli/libzopfli.js"></script>
 <script src="zopfli/compress.js"></script>
 <script src="zopfli/byte-b64.js"></script>
+<script src="csso.js"></script>
 
-<script type=module>
+<script type=module defer>
 
-import { ResourcePool, Packer } from "./rr/index.js";
+// Roadroller setup
+import { ResourcePool, Packer } from "./rr/index.js"; 
+const resourcePool = new ResourcePool();
 
-const resourcePool = new ResourcePool(); // this should persist
+// Globals
+let ids = ["html1","html2","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"], i;
 
-let ids = ["html1","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"], i;
+// Concat
+let concat = () => {
 
-oninput = () => {
-  for(i in ids){
-    localStorage["js13kpack_"+ids[i]] = top[ids[i]].value;
-  }
-}
-
-pack1.onclick = async () => {
-  console.clear();
-
-  det1.setAttribute("open", "false");
-  document.body.style.cursor = "wait";
-  out1.value = "";
-  
-  
   var js = 
   js1.value + ';' +
   js2.value + ';' +
@@ -83,75 +113,97 @@ pack1.onclick = async () => {
   js9.value + ';' +
   js10.value;
   
+  js = js.replace(/;+$/,";");
+  
+  let raw = (html1.value + "\n" + html2.value + "\n<script>\n" + js + "\n<\/script>"+(css1.value ? ("\n<style>\n" + css1.value + "\n<\/style>"):""));
+  
+  // Out1
+  out1.value = raw;
+  
+  // Stats
+  out4.value += ("raw size: " + (raw.length + 3) + " bytes");
+}
+
+
+// Minify 
+let minify = async (skip, skip2) => {
+
+  // JS
+  var js = 
+  js1.value + ';' +
+  js2.value + ';' +
+  js3.value + ';' +
+  js4.value + ';' +
+  js5.value + ';' +
+  js6.value + ';' +
+  js7.value + ';' +
+  js8.value + ';' +
+  js9.value + ';' +
+  js10.value;
   
   js = js.replace(/;+$/,";");
   
-  //console.log(js);
-  console.log("raw size: " + (html1.value + "<script>" + js + "<\/script>"+(css1.value ? ("<style>" + css1.value):"")).length + " bytes");
+  // HTML
+  let html = html2.value.replace(/(<!--[^]+?->|\s)+/g," ").replace(/ (?=<|$)|<\/[tl].>|<.p> *(<[p/])| ?\/?(>)/gi,"$1$2");
   
-  if(min1.checked){
-    let terser = await Terser.minify(js, {
-        toplevel: true,
-        compress: {
-          passes: 5,
-          unsafe: true,
-          pure_getters: true
-        }
+  // JS
+  let terser = await Terser.minify(js, {
+      toplevel: true,
+      compress: {
+        passes: 5,
+        unsafe: true,
+        pure_getters: true
       }
-    )
-    if(terser.code) js = terser.code;
-  }
-  
-  if(rr1.checked){
-    const inputs = [ { data: js, type: 'js', action: 'eval' } ];
-    const packer = new Packer(inputs, { resourcePool }); // this should be distinct
-    await packer.optimize(); // equivalent to -O1
-    const { firstLine, secondLine } = packer.makeDecoder();
-    js=firstLine+secondLine;
-    setTimeout('document.body.style.cursor = "default";',500);
-  }
-  
-  else if(rr2.checked){
-    document.body.style.cursor = "wait";
-    const inputs = [ { data: js, type: 'js', action: 'eval' } ];
-    const packer = new Packer(inputs, { resourcePool }); // this should be distinct
-    await packer.optimize(2); // equivalent to -O1
-    const { firstLine, secondLine } = packer.makeDecoder();
-    js=firstLine+secondLine;
-    setTimeout('document.body.style.cursor = "default";',500);
-  }
-  
-  else {
-    document.body.style.cursor = "default";
-  }
-
-  var res = 
-  (
-    min1.checked
-    ? html1.value.replace(/(<!--[^]+?->|\s)+/g," ").replace(/ (?=<|$)|<\/[tl].>|<.p> *(<[p/])| ?\/?(>)/gi,"$1$2")
-    : html1.value
+    }
   )
-  + "<script>"
-  + js
-  + "</script>" + 
-  (css1.value ? ("<style>" + (
-    min1.checked
-    ? css1.value.replace(/(\/\*[^]+?\*\/|\s)+/g," ").replace(/^ |([ ;]*)([^\w:*.#% -])([ ;]*)|\*?(:) */g,"$2$4")
-    : css1.value
-  )):"");
+  if(terser.code) js = terser.code;
   
-  out1.value = res;
-  if(min1.checked && !rr1.checked) console.log("minified code: " + res.length + " bytes");
-  if(min1.checked && rr1.checked) console.log("minified/roadrolled code: " + res.length + " bytes");
-  det1.setAttribute("open", "true");
-  b.scrollTop = 10000;
-  document.documentElement.scrollTop = 10000;
+  // CSS
+  let css = css1.value ? csso.minify(css1.value) : "";
   
-  if(zip1.checked){
+  // Result
+  let ret = html + "<script>" + js.replace(/;$/,"") + "</script>" + (css1.value ? ("<style>" + css.css) : "");
+  let res = html1.value + ret;
+  
+  // Out2
+  out2.value = res;
+  
+  // Stats
+  out4.value += (" / minified code: " + (res.length + 3) + " bytes");
+
+  let code = ret;
+  
+  // Roadroll
+  if(min2.checked && !skip) {
+  
+    if(rr1.checked){
+      const inputs = [ { data: code, type: 'text', action: 'write' } ];
+      const packer = new Packer(inputs, { resourcePool });
+      await packer.optimize(); // equivalent to -O1
+      const { firstLine, secondLine } = packer.makeDecoder();
+      code=firstLine+secondLine;
+    }
     
-    dl1.style.color = "blue";
+    else if(rr2.checked){
+      const inputs = [ { data: code, type: 'text', action: 'write' } ];
+      const packer = new Packer(inputs, { resourcePool });
+      await packer.optimize(2); // equivalent to -O1
+      const { firstLine, secondLine } = packer.makeDecoder();
+      code=firstLine+secondLine;
+    }
     
+    code = html1.value + "<" + "script>" + code + "<\/" + "script>";
+  
+    // Out3
+    out3.value = code;
     
+    // Stats
+    if(min2.checked) out4.value += (" / roadrolled code: " + (code.length + 3) + " bytes");
+    
+  }
+  
+  // Zip
+  if(zip1.checked && !skip2){
     
     const z = window.Module;
 
@@ -205,27 +257,66 @@ pack1.onclick = async () => {
       return result;
     }
 
-
-    var inflated = (new TextEncoder()).encode(res);
+    code = "\ufeff" + code;
+    var inflated = (new TextEncoder()).encode(code);
     var deflated = compress(inflated, 2, defaultOptions);
     var zipzop = makeZip("index.html", inflated, deflated);
-    console.log("zip file: " + zipzop.length + " bytes");
+    out4.value += (" / zip file: " + zipzop.length + " bytes");
     var decoder = new TextDecoder('utf8');
     var zipzop64 = bytesToBase64(zipzop);
     //console.log(zipzop64);
     dl1.setAttribute("download", "entry.zip");
+    dl1.innerHTML = "Download (" + zipzop.length + " bytes, " + (new Date()).toLocaleTimeString() + ")";
     dl1.href = "data:application/zip;base64," + zipzop64;
 
   }
-  else {
-    dl1.style.color = "transparent";
-  }
 }
-</script>
 
-<script>
-  var ids = ["html1","css1","js1","js2","js3","js4","js5","js6","js7","js8","js9","js10"];
+
+// On input: save code in localstorage, minify
+oninput = () => {
   for(i in ids){
-    if(localStorage["js13kpack_"+ids[i]]) top[ids[i]].value = localStorage["js13kpack_"+ids[i]];
+    localStorage["js13kpack_"+ids[i]] = top[ids[i]].value;
   }
+  
+  out1.value = "";
+  out2.value = "";
+  out3.value = "";
+  out4.value = "";
+  dl1.innerHTML = "...";
+  dl1.href = "";
+  
+  
+  concat();
+  minify(1,1);
+}
+
+pack1.onclick = async () => {
+
+  out1.value = "";
+  out2.value = "";
+  out3.value = "";
+  out4.value = "";
+  
+  concat();
+  minify();
+}
+
+onload = () => {
+
+  // Onload
+  for(i in ids){
+    if(localStorage["js13kpack_"+ids[i]] !== undefined) top[ids[i]].value = localStorage["js13kpack_"+ids[i]];
+  }
+
+  out1.value = "";
+  out2.value = "";
+  out3.value = "";
+  out4.value = "";
+  dl1.innerHTML = "...";
+  dl1.href = "";
+    
+  //concat();
+  //minify(1,1);
+}
 </script>
